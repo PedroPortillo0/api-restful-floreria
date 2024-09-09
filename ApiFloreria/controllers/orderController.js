@@ -3,11 +3,18 @@ const Order = require('../models/order');
 // Crear un nuevo pedido
 exports.createOrder = async (req, res) => {
   const { customer_name, customer_email, total_price, product_id } = req.body;
+  
+  // Validar campos obligatorios
+  if (!customer_name || !customer_email || !total_price || !product_id) {
+    return res.status(400).json({ message: 'Faltan campos obligatorios (customer_name, customer_email, total_price, product_id)' });
+  }
+  
   try {
     const order = await Order.create({ customer_name, customer_email, total_price, product_id });
     res.status(201).json(order);
   } catch (error) {
-    res.status(500).json({ message: 'Error al crear el pedido' });
+    console.error('Error al crear el pedido:', error);
+    res.status(500).json({ message: 'Error al crear el pedido', error: error.message });
   }
 };
 
@@ -17,7 +24,8 @@ exports.getAllOrders = async (req, res) => {
     const orders = await Order.findAll();
     res.json(orders);
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener los pedidos' });
+    console.error('Error al obtener los pedidos:', error);
+    res.status(500).json({ message: 'Error al obtener los pedidos', error: error.message });
   }
 };
 
@@ -28,7 +36,8 @@ exports.getOrderById = async (req, res) => {
     if (!order) return res.status(404).json({ message: 'Pedido no encontrado' });
     res.json(order);
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener el pedido' });
+    console.error('Error al obtener el pedido:', error);
+    res.status(500).json({ message: 'Error al obtener el pedido', error: error.message });
   }
 };
 
@@ -36,6 +45,12 @@ exports.getOrderById = async (req, res) => {
 exports.updateOrderStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
+  
+  // Validar que el estado esté presente
+  if (!status) {
+    return res.status(400).json({ message: 'El campo status es obligatorio' });
+  }
+  
   try {
     const order = await Order.findByPk(id);
     if (!order) return res.status(404).json({ message: 'Pedido no encontrado' });
@@ -44,7 +59,8 @@ exports.updateOrderStatus = async (req, res) => {
     await order.save();
     res.json(order);
   } catch (error) {
-    res.status(500).json({ message: 'Error al actualizar el pedido' });
+    console.error('Error al actualizar el estado del pedido:', error);
+    res.status(500).json({ message: 'Error al actualizar el pedido', error: error.message });
   }
 };
 
@@ -58,6 +74,7 @@ exports.deleteOrder = async (req, res) => {
     await order.destroy();
     res.status(204).json();
   } catch (error) {
-    res.status(500).json({ message: 'Error al eliminar el pedido' });
+    console.error('Error al eliminar el pedido:', error);
+    res.status(500).json({ message: 'Error al eliminar el pedido', error: error.message });
   }
 };

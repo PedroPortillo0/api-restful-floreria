@@ -6,7 +6,8 @@ exports.getAllProducts = async (req, res) => {
     const products = await Product.findAll();
     res.json(products);
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener los productos' });
+    console.error('Error al obtener los productos:', error);
+    res.status(500).json({ message: 'Error al obtener los productos', error: error.message });
   }
 };
 
@@ -17,39 +18,47 @@ exports.getProductById = async (req, res) => {
     if (!product) return res.status(404).json({ message: 'Producto no encontrado' });
     res.json(product);
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener el producto' });
+    console.error('Error al obtener el producto:', error);
+    res.status(500).json({ message: 'Error al obtener el producto', error: error.message });
   }
 };
 
 // Crear un nuevo producto
 exports.createProduct = async (req, res) => {
-  const { name, price, stock, description, image_url } = req.body;
+  const { nombreproducto, price, stock, descrip, image_url } = req.body;
   try {
-    const product = await Product.create({ name, price, stock, description, image_url });
+    // Validar que los datos necesarios estén presentes
+    if (!nombreproducto || !price || !stock) {
+      return res.status(400).json({ message: 'Faltan campos obligatorios (nombreproducto, price, stock)' });
+    }
+
+    const product = await Product.create({ nombreproducto, price, stock, descrip, image_url });
     res.status(201).json(product);
   } catch (error) {
-    res.status(500).json({ message: 'Error al crear el producto' });
+    console.error('Error al crear el producto:', error);
+    res.status(500).json({ message: 'Error al crear el producto', error: error.message });
   }
 };
 
 // Actualizar un producto
 exports.updateProduct = async (req, res) => {
   const { id } = req.params;
-  const { name, price, stock, description, image_url } = req.body;
+  const { nombreproducto, price, stock, descrip, image_url } = req.body;
   try {
     const product = await Product.findByPk(id);
     if (!product) return res.status(404).json({ message: 'Producto no encontrado' });
 
-    product.name = name;
+    product.nombreproducto = nombreproducto;
     product.price = price;
     product.stock = stock;
-    product.description = description;
+    product.descrip = descrip;
     product.image_url = image_url;
 
     await product.save();
     res.json(product);
   } catch (error) {
-    res.status(500).json({ message: 'Error al actualizar el producto' });
+    console.error('Error al actualizar el producto:', error);
+    res.status(500).json({ message: 'Error al actualizar el producto', error: error.message });
   }
 };
 
@@ -63,6 +72,7 @@ exports.deleteProduct = async (req, res) => {
     await product.destroy();
     res.status(204).json();
   } catch (error) {
-    res.status(500).json({ message: 'Error al eliminar el producto' });
+    console.error('Error al eliminar el producto:', error);
+    res.status(500).json({ message: 'Error al eliminar el producto', error: error.message });
   }
 };
